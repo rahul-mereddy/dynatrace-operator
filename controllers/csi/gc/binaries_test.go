@@ -25,7 +25,10 @@ var (
 func TestBinaryGarbageCollector_succeedsWhenVersionReferenceBaseDirectoryNotExists(t *testing.T) {
 	gc := newMockGarbageCollector()
 
-	err := gc.runBinaryGarbageCollection(tenantUUID, version_1)
+	versionReferences, err := gc.getVersionReferences(tenantUUID)
+	assert.NoError(t, err)
+
+	err = gc.runBinaryGarbageCollection(versionReferences, tenantUUID, version_1)
 
 	assert.NoError(t, err)
 }
@@ -34,7 +37,10 @@ func TestBinaryGarbageCollector_succeedsWhenNoVersionsAvailable(t *testing.T) {
 	gc := newMockGarbageCollector()
 	_ = gc.fs.MkdirAll(versionReferenceBasePath, 0770)
 
-	err := gc.runBinaryGarbageCollection(tenantUUID, version_1)
+	versionReferences, err := gc.getVersionReferences(tenantUUID)
+	assert.NoError(t, err)
+
+	err = gc.runBinaryGarbageCollection(versionReferences, tenantUUID, version_1)
 
 	assert.NoError(t, err)
 }
@@ -43,7 +49,10 @@ func TestBinaryGarbageCollector_ignoresLatest(t *testing.T) {
 	gc := newMockGarbageCollector()
 	gc.mockUnusedVersions(version_1)
 
-	err := gc.runBinaryGarbageCollection(tenantUUID, version_1)
+	versionReferences, err := gc.getVersionReferences(tenantUUID)
+	assert.NoError(t, err)
+
+	err = gc.runBinaryGarbageCollection(versionReferences, tenantUUID, version_1)
 
 	assert.NoError(t, err)
 	gc.assertVersionExists(t, version_1)
@@ -53,7 +62,10 @@ func TestBinaryGarbageCollector_removesUnused(t *testing.T) {
 	gc := newMockGarbageCollector()
 	gc.mockUnusedVersions(version_1, version_2, version_3)
 
-	err := gc.runBinaryGarbageCollection(tenantUUID, version_2)
+	versionReferences, err := gc.getVersionReferences(tenantUUID)
+	assert.NoError(t, err)
+
+	err = gc.runBinaryGarbageCollection(versionReferences, tenantUUID, version_2)
 
 	assert.NoError(t, err)
 	gc.assertVersionNotExists(t, version_1, version_3)
@@ -63,7 +75,10 @@ func TestBinaryGarbageCollector_ignoresUsed(t *testing.T) {
 	gc := newMockGarbageCollector()
 	gc.mockUsedVersions(version_1, version_2, version_3)
 
-	err := gc.runBinaryGarbageCollection(tenantUUID, version_3)
+	versionReferences, err := gc.getVersionReferences(tenantUUID)
+	assert.NoError(t, err)
+
+	err = gc.runBinaryGarbageCollection(versionReferences, tenantUUID, version_3)
 
 	assert.NoError(t, err)
 	gc.assertVersionExists(t, version_1, version_2, version_3)
