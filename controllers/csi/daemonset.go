@@ -203,6 +203,20 @@ func prepareDriverSpec(operatorImage string) v1.Container {
 				},
 			},
 		},
+		ReadinessProbe: &v1.Probe{
+			FailureThreshold:    3,
+			InitialDelaySeconds: 5,
+			PeriodSeconds:       5,
+			SuccessThreshold:    1,
+			TimeoutSeconds:      1,
+			Handler: v1.Handler{
+				HTTPGet: &v1.HTTPGetAction{
+					Path:   "/readyz",
+					Port:   intstr.FromString("healthz"),
+					Scheme: "HTTP",
+				},
+			},
+		},
 		SecurityContext: &v1.SecurityContext{
 			Privileged: &privileged,
 			RunAsUser:  &userID,
